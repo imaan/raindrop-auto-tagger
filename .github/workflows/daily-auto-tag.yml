@@ -1,0 +1,42 @@
+name: Daily Raindrop Auto-Tagger
+
+on:
+  # Run daily at 2 AM UTC (adjust time as needed)
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  auto-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests anthropic
+
+    - name: Run Raindrop Auto-Tagger
+      env:
+        RAINDROP_TOKEN: ${{ secrets.RAINDROP_TOKEN }}
+        CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+      run: |
+        python raindrop_auto_tagger.py
+
+    - name: Upload logs as artifact
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: tagger-logs-${{ github.run_number }}
+        path: raindrop_tagger_*.log
+        retention-days: 30

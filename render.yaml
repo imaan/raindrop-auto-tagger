@@ -1,0 +1,32 @@
+# Render.com deployment configuration
+# This file enables easy deployment to Render.com's free tier
+
+services:
+  # Cron job service for daily execution
+  - type: cron
+    name: raindrop-auto-tagger
+    env: python
+    region: oregon  # Change to your preferred region
+    plan: free      # Use the free tier
+
+    # Schedule: Run daily at 2 AM UTC
+    # Cron format: minute hour day month weekday
+    schedule: "0 2 * * *"
+
+    # Build configuration
+    buildCommand: pip install -r requirements.txt
+
+    # Command to run
+    startCommand: python raindrop_auto_tagger.py
+
+    # Environment variables (set these in Render dashboard)
+    envVars:
+      - key: RAINDROP_TOKEN
+        sync: false  # Manual entry in dashboard for security
+      - key: CLAUDE_API_KEY
+        sync: false  # Manual entry in dashboard for security
+      - key: PYTHON_VERSION
+        value: 3.9.18
+
+    # Health check disabled for cron jobs
+    healthCheckPath: false
